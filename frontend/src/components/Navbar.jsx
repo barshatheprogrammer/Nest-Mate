@@ -50,9 +50,10 @@ const Navbar = () => {
               </button>
             </>
           ) : (
-            <Link to="/login" className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white rounded-lg shadow-lg shadow-pink-500/25 transition-all" style={{ padding: '0.5rem 1.25rem', fontWeight: 500 }}>
-              Login / Join
-            </Link>
+            <>
+              <Link to="/login" style={{ color: 'var(--color-text-main)', fontWeight: 500 }}>Login</Link>
+              <Link to="/register" className="btn btn-primary bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white rounded-lg shadow-lg shadow-pink-500/25 transition-all border-none" style={{ padding: '0.5rem 1.25rem' }}>Join</Link>
+            </>
           )}
         </div>
       </div>
