@@ -1,34 +1,55 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { AuthContext } from '../context/AuthContext';
-import { User, Settings, MapPin, DollarSign, Home, Briefcase, Book, Coffee, Check, Clock, AlertCircle } from 'lucide-react';
+import { User, MapPin, Briefcase, Calendar, DollarSign, Home, Coffee, Clock, Book, Check, Settings, Edit3, AlertCircle } from 'lucide-react';
 import { motion } from 'motion/react';
+import EditProfileModal from '../components/EditProfileModal';
 import { Link } from 'react-router-dom';
 
 const Profile = () => {
-  const { user } = useContext(AuthContext);
+  const { user, loading: authLoading, updateLocalUser } = useContext(AuthContext);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
+    if (authLoading) return; // Wait for AuthContext to finish checking/syncing user
+
+    if (!user) {
+      setError("Please log in to view your profile.");
+      setLoading(false);
+      return;
+    }
+
     const fetchProfile = async () => {
       try {
-        // Need to ensure headers are sent if using standard axios, or assume AuthContext configures it.
         const res = await axios.get('/profile');
         setProfile(res.data);
       } catch (err) {
         if (err.response?.status === 404) {
-          // No profile yet, that's fine
+          setError("Profile not found. Click Edit Profile to create one.");
         } else {
-          setError(err.response?.data?.message || 'Error fetching profile');
+          setError(err.response?.data?.message || 'Failed to fetch profile');
         }
       } finally {
         setLoading(false);
       }
     };
     fetchProfile();
-  }, []);
+  }, [user, authLoading]);
+
+  const handleSaveSuccess = (updatedProfile) => {
+    setProfile(updatedProfile);
+    if (updatedProfile.user) {
+      updateLocalUser({
+        name: updatedProfile.user.name,
+        profileImage: updatedProfile.user.profileImage,
+        college: updatedProfile.user.college,
+        city: updatedProfile.user.city
+      });
+    }
+  };
 
   if (loading) {
     return (
@@ -56,7 +77,10 @@ const Profile = () => {
             </h1>
             <p className="text-white/50 mt-1">Manage your information and roommate preferences.</p>
           </div>
-          <button className="bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-xl px-5 py-2.5 flex items-center justify-center gap-2 transition-all">
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="bg-white/10 hover:bg-white/20 border border-white/10 text-white rounded-xl px-5 py-2.5 flex items-center justify-center gap-2 transition-all"
+          >
             <Settings size={18} /> Edit Profile
           </button>
         </motion.div>
@@ -101,14 +125,22 @@ const Profile = () => {
               <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-8 text-center">
                 <div className="relative w-32 h-32 mx-auto mb-6">
                   <div className="absolute inset-0 bg-gradient-to-tr from-pink-500 to-purple-500 rounded-full animate-spin-slow blur-md opacity-50"></div>
-                  <img 
-                    src="https://via.placeholder.com/150" 
-                    alt="Profile" 
-                    className="relative w-32 h-32 rounded-full object-cover border-4 border-black z-10"
-                  />
+                  <div 
+                    className="relative w-32 h-32 rounded-full mx-auto z-10 group overflow-hidden border-4 border-black cursor-pointer"
+                    onClick={() => setIsModalOpen(true)}
+                  >
+                    <img 
+                      src={user?.profileImage && user.profileImage !== 'default.jpg' ? user.profileImage : `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'User')}&background=ec4899&color=fff&size=150`} 
+                      alt="Profile" 
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                      <p className="text-xs font-semibold text-white">Change Photo</p>
+                    </div>
+                  </div>
                 </div>
                 <h2 className="text-2xl font-bold mb-1">{user?.name || 'User'}</h2>
-                <p className="text-pink-400 font-medium mb-6">{user?.college || 'University'}</p>
+                <p className="text-pink-400 font-medium mb-6">{user?.college || 'University not set'}</p>
                 
                 <div className="space-y-4 text-left border-t border-white/10 pt-6">
                   <div className="flex items-center gap-3 text-white/80">
@@ -117,7 +149,7 @@ const Profile = () => {
                     </div>
                     <div>
                       <p className="text-xs text-white/40">Course</p>
-                      <p className="font-medium text-sm">{profile.course}</p>
+                      <p className="font-medium text-sm">{profile.course !== 'Not specified' ? profile.course : 'Not set'}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 text-white/80">
@@ -126,7 +158,7 @@ const Profile = () => {
                     </div>
                     <div>
                       <p className="text-xs text-white/40">City / Location</p>
-                      <p className="font-medium text-sm">{user?.city} <span className="text-white/40">({profile.location})</span></p>
+                      <p className="font-medium text-sm">{user?.city || 'City not set'} <span className="text-white/40">({profile.location !== 'Not specified' ? profile.location : 'Any area'})</span></p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 text-white/80">
@@ -135,7 +167,7 @@ const Profile = () => {
                     </div>
                     <div>
                       <p className="text-xs text-white/40">Age</p>
-                      <p className="font-medium text-sm">{profile.age} years old</p>
+                      <p className="font-medium text-sm">{profile.age ? `${profile.age} years old` : 'Not set'}</p>
                     </div>
                   </div>
                 </div>
@@ -173,7 +205,9 @@ const Profile = () => {
                     </div>
                     <div>
                       <p className="text-xs text-white/40 font-medium uppercase tracking-wider mb-0.5">Budget</p>
-                      <p className="font-medium text-sm text-white/90">₹{profile.budgetMin} - ₹{profile.budgetMax} <span className="text-white/40">/mo</span></p>
+                      <p className="font-medium text-sm text-white/90">
+                        {profile.budgetMin || profile.budgetMax ? `₹${profile.budgetMin} - ₹${profile.budgetMax}` : 'Not set'} <span className="text-white/40">/mo</span>
+                      </p>
                     </div>
                   </div>
                   
@@ -237,6 +271,15 @@ const Profile = () => {
           </div>
         ) : null}
       </div>
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        currentProfile={profile || {}}
+        currentUser={user}
+        onSaveSuccess={handleSaveSuccess}
+      />
     </div>
   );
 };

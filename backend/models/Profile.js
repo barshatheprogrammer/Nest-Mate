@@ -7,14 +7,14 @@ const profileSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
-  age: { type: Number, required: true },
-  course: { type: String, required: true },
-  location: { type: String }, // specific area preferred
+  age: { type: Number, default: 0 },
+  course: { type: String, default: 'Not specified' },
+  location: { type: String, default: 'Not specified' }, // specific area preferred
   bio: { type: String, maxLength: 500 },
   
   // Budget
-  budgetMin: { type: Number, required: true },
-  budgetMax: { type: Number, required: true },
+  budgetMin: { type: Number, default: 0 },
+  budgetMax: { type: Number, default: 0 },
   
   // Room Preferences
   roomType: { 

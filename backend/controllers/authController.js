@@ -66,6 +66,7 @@ const loginUser = async (req, res) => {
         name: user.name,
         email: user.email,
         role: user.role,
+        profileImage: user.profileImage,
         token: generateToken(user._id)
       });
     } else {
@@ -88,8 +89,79 @@ const getMe = async (req, res) => {
   }
 };
 
+// @desc    Sync Clerk user and get custom token
+// @route   POST /api/auth/clerk-sync
+// @access  Public
+const syncClerkUser = async (req, res) => {
+  try {
+    const { email, clerkId, name, imageUrl } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required for syncing' });
+    }
+
+    // Check for user
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      // Race condition: Webhook hasn't finished, create user here
+      user = new User({
+        clerkId,
+        email,
+        name: name || 'User',
+        profileImage: imageUrl || 'default.jpg',
+        college: 'Not specified',
+        city: 'Not specified',
+        password: 'OAUTH_PROVIDER_NO_PASSWORD'
+      });
+      await user.save();
+      
+      // Also create an empty profile
+      const Profile = require('../models/Profile');
+      const newProfile = new Profile({ user: user._id });
+      await newProfile.save();
+    }
+
+    // Always sync the latest profile image from Clerk
+    if (user && imageUrl && user.profileImage !== imageUrl) {
+      user.profileImage = imageUrl;
+      await user.save();
+    }
+
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      college: user.college,
+      city: user.city,
+      profileImage: user.profileImage,
+      token: generateToken(user._id)
+    });
+  } catch (error) {
+    if (error.code === 11000) {
+      // Duplicate key error means webhook created it just now
+      const user = await User.findOne({ email: req.body.email });
+      if (user) {
+        return res.json({
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          college: user.college,
+          city: user.city,
+          profileImage: user.profileImage,
+          token: generateToken(user._id)
+        });
+      }
+    }
+    res.status(500).json({ message: error.message });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
-  getMe
+  getMe,
+  syncClerkUser
 };

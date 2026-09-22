@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const connectDB = async () => {
   try {
     const conn = await mongoose.connect(process.env.MONGO_URI, {
-      // Mongoose 6+ automatically handles options like useNewUrlParser and useUnifiedTopology
+      family: 4 // Force IPv4 to prevent IPv6 DNS routing issues (ECONNREFUSED)
     });
 
     console.log(`MongoDB Connected: ${conn.connection.host}`);

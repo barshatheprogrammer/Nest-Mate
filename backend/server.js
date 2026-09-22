@@ -12,11 +12,17 @@ connectDB();
 
 const app = express();
 
+// Webhook route must be registered before express.json() to parse raw body for Svix
+app.use('/api/webhooks', express.raw({ type: 'application/json' }), require('./routes/webhookRoutes'));
+
 // Body parser
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 // Enable CORS
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173', 'https://nest-mate-gamma.vercel.app'],
+  credentials: true
+}));
 
 // Dev logging middleware
 if (process.env.NODE_ENV === 'development') {

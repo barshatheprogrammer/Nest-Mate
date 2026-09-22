@@ -32,8 +32,19 @@ class ErrorBoundary extends React.Component {
   }
 }
 
+import { ClerkProvider } from '@clerk/react';
+
+// Import your publishable key
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
+if (!PUBLISHABLE_KEY) {
+  console.warn("Missing Publishable Key. Please add VITE_CLERK_PUBLISHABLE_KEY to your .env file");
+}
+
 createRoot(document.getElementById('root')!).render(
   <ErrorBoundary>
-    <App />
+    <ClerkProvider publishableKey={PUBLISHABLE_KEY || "pk_test_missing_key"}>
+      <App />
+    </ClerkProvider>
   </ErrorBoundary>
 );

@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import { useUser, useAuth } from '@clerk/react';
 
 export const AuthContext = createContext();
 
@@ -9,20 +10,43 @@ export const AuthProvider = ({ children }) => {
   const [error, setError] = useState(null);
 
   // Configure axios defaults
-  axios.defaults.baseURL = 'http://localhost:5000/api';
+  axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+  const { isLoaded, isSignedIn, user: clerkUser } = useUser();
+  const { getToken } = useAuth();
 
   useEffect(() => {
+    // Do not finalize auth state until Clerk has finished loading
+    if (!isLoaded) return;
+
     const checkLoggedIn = async () => {
       const storedUser = localStorage.getItem('user');
-      if (storedUser) {
+      
+      // If signed in with Clerk but no custom user state, sync it
+      if (isSignedIn && clerkUser && !storedUser) {
+        try {
+          const email = clerkUser.primaryEmailAddress?.emailAddress;
+          const name = clerkUser.fullName || 'User';
+          const imageUrl = clerkUser.imageUrl;
+          if (email) {
+            const res = await axios.post('/auth/clerk-sync', { email, clerkId: clerkUser.id, name, imageUrl });
+            setUser(res.data);
+            localStorage.setItem('user', JSON.stringify(res.data));
+            axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
+          }
+        } catch (err) {
+          console.error("Clerk sync failed", err);
+        }
+      } else if (storedUser) {
         const parsedUser = JSON.parse(storedUser);
         setUser(parsedUser);
         axios.defaults.headers.common['Authorization'] = `Bearer ${parsedUser.token}`;
       }
       setLoading(false);
     };
+    
     checkLoggedIn();
-  }, []);
+  }, [isLoaded, isSignedIn, clerkUser]);
 
   const login = async (email, password) => {
     try {
@@ -58,8 +82,14 @@ export const AuthProvider = ({ children }) => {
     delete axios.defaults.headers.common['Authorization'];
   };
 
+  const updateLocalUser = (updatedData) => {
+    const newUser = { ...user, ...updatedData };
+    setUser(newUser);
+    localStorage.setItem('user', JSON.stringify(newUser));
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, error, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, error, login, register, logout, updateLocalUser }}>
       {children}
     </AuthContext.Provider>
   );

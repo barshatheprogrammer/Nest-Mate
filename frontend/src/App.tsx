@@ -9,6 +9,7 @@ import Profile from "./pages/Profile";
 import Dashboard from "./pages/Dashboard";
 import Explore from "./pages/Explore";
 import RoommateProfile from "./pages/RoommateProfile";
+import SSOCallback from "./pages/SSOCallback";
 import "./globals.css";
 import LenisScroll from "./components/LenisScroll";
 
@@ -29,6 +30,7 @@ export default function App() {
                             <Route path="/discover" element={<Navigate to="/explore" replace />} />
                             <Route path="/explore" element={<Explore />} />
                             <Route path="/roommates/:id" element={<RoommateProfile />} />
+                            <Route path="/sso-callback" element={<SSOCallback />} />
                         </Routes>
                     </main>
                     <Footer />

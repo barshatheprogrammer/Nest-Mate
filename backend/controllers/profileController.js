@@ -1,4 +1,5 @@
 const Profile = require('../models/Profile');
+const User = require('../models/User');
 
 // @desc    Get current user profile
 // @route   GET /api/profile
@@ -23,10 +24,26 @@ const getMyProfile = async (req, res) => {
 const createOrUpdateProfile = async (req, res) => {
   try {
     const {
+      name, college, city, profileImage, // User fields
       age, course, location, bio, budgetMin, budgetMax, roomType,
       foodPreference, smoking, drinking, pets, studySchedule, sleepSchedule,
       cleanliness, socialPreference
     } = req.body;
+
+    // Update User model fields if provided
+    if (name || college || city || profileImage) {
+      const userFields = {};
+      if (name) userFields.name = name;
+      if (college) userFields.college = college;
+      if (city) userFields.city = city;
+      if (profileImage) userFields.profileImage = profileImage;
+
+      await User.findByIdAndUpdate(
+        req.user.id,
+        { $set: userFields },
+        { new: true }
+      );
+    }
 
     // Build profile object
     const profileFields = { user: req.user.id };
@@ -55,13 +72,18 @@ const createOrUpdateProfile = async (req, res) => {
         { user: req.user.id },
         { $set: profileFields },
         { new: true }
-      );
+      ).populate('user', ['name', 'email', 'profileImage', 'college', 'city']);
+      
       return res.json(profile);
     }
 
     // Create new profile
     profile = new Profile(profileFields);
     await profile.save();
+    
+    // Populate user before sending back
+    profile = await profile.populate('user', ['name', 'email', 'profileImage', 'college', 'city']);
+    
     res.status(201).json(profile);
   } catch (error) {
     res.status(500).json({ message: error.message });
