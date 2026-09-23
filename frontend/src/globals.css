@@ -13,6 +13,10 @@ body::selection {
     @apply bg-pink-600 text-white;
 }
 
+option {
+    @apply bg-[#1a1a1a] text-white;
+}
+
 button {
     @apply cursor-pointer;
 }

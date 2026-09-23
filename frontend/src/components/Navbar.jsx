@@ -54,23 +54,40 @@ const Navbar = () => {
         {/* Center: Navigation Links */}
         <div className="hidden md:flex flex-1 justify-center items-center gap-6">
           {user ? (
-            <>
-              <NavLink to="/dashboard" className={navLinkClass} style={navLinkStyle}>
-                Dashboard
-              </NavLink>
-              <NavLink to="/explore" className={navLinkClass} style={navLinkStyle}>
-                Explore
-              </NavLink>
-              <NavLink to="/matches" className={navLinkClass} style={navLinkStyle}>
-                Matches
-              </NavLink>
-              <NavLink to="/requests" className={navLinkClass} style={navLinkStyle}>
-                Requests
-              </NavLink>
-              <NavLink to="/messages" className={navLinkClass} style={navLinkStyle}>
-                Messages
-              </NavLink>
-            </>
+            user.role === 'owner' ? (
+              <>
+                <NavLink to="/owner/dashboard" className={navLinkClass} style={navLinkStyle}>
+                  Dashboard
+                </NavLink>
+                <NavLink to="/owner/flats" className={navLinkClass} style={navLinkStyle}>
+                  My Flats
+                </NavLink>
+                <NavLink to="/owner/flats/add" className={navLinkClass} style={navLinkStyle}>
+                  Add Flat
+                </NavLink>
+                <NavLink to="/owner/interests" className={navLinkClass} style={navLinkStyle}>
+                  Interested Students
+                </NavLink>
+              </>
+            ) : (
+              <>
+                <NavLink to="/dashboard" className={navLinkClass} style={navLinkStyle}>
+                  Dashboard
+                </NavLink>
+                <NavLink to="/explore" className={navLinkClass} style={navLinkStyle}>
+                  Explore
+                </NavLink>
+                <NavLink to="/matches" className={navLinkClass} style={navLinkStyle}>
+                  Matches
+                </NavLink>
+                <NavLink to="/requests" className={navLinkClass} style={navLinkStyle}>
+                  Requests
+                </NavLink>
+                <NavLink to="/messages" className={navLinkClass} style={navLinkStyle}>
+                  Messages
+                </NavLink>
+              </>
+            )
           ) : (
             <>
               <NavLink to="/" className={navLinkClass} style={navLinkStyle} end>
@@ -153,7 +170,7 @@ const Navbar = () => {
                       exit={{ opacity: 0, y: 10 }}
                       className="absolute right-0 mt-2 w-48 bg-[#121212] border border-white/10 rounded-xl shadow-2xl py-2 z-50 text-white"
                     >
-                      <Link to="/profile" className="flex items-center gap-3 px-4 py-2 hover:bg-white/5 transition-colors">
+                      <Link to={user?.role === 'owner' ? "/owner/profile" : "/profile"} className="flex items-center gap-3 px-4 py-2 hover:bg-white/5 transition-colors">
                         <UserIcon size={16} className="text-white/70" /> <span className="text-sm font-medium">Profile</span>
                       </Link>
                       <Link to="/settings" className="flex items-center gap-3 px-4 py-2 hover:bg-white/5 transition-colors">

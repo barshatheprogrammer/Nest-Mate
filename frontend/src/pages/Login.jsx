@@ -8,6 +8,7 @@ import { motion } from 'motion/react';
 const Login = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('student');
   const [isFocused, setIsFocused] = useState('');
   const { user, login, error } = useContext(AuthContext);
   const navigate = useNavigate();
@@ -15,16 +16,20 @@ const Login = () => {
 
   useEffect(() => {
     if (user) {
-      navigate('/profile');
+      if (user.role === 'admin') {
+        navigate('/admin/dashboard');
+      } else if (user.role === 'owner') {
+        navigate('/owner/dashboard');
+      } else {
+        navigate('/profile');
+      }
     }
   }, [user, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const success = await login(email, password);
-    if (success) {
-      navigate('/dashboard');
-    }
+    await login(email, password);
+    // Redirect is handled by the useEffect watching the 'user' state
   };
 
   return (
@@ -70,16 +75,20 @@ const Login = () => {
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              onClick={() => {
-                if (!clerk.loaded) return;
+              onClick={async () => {
+                if (!clerk.loaded) {
+                  alert("Authentication service is loading. Please wait a moment.");
+                  return;
+                }
                 try {
-                  clerk.client.signIn.authenticateWithRedirect({
+                  await clerk.client.signIn.authenticateWithRedirect({
                     strategy: 'oauth_google',
                     redirectUrl: '/sso-callback',
                     redirectUrlComplete: '/profile',
                   });
                 } catch (e) {
-                  console.error(e);
+                  console.error("Google Login Error:", e);
+                  alert("Error starting Google Login. Please try again.");
                 }
               }}
               type="button"
@@ -99,6 +108,31 @@ const Login = () => {
             <div className="flex-1 h-px bg-white/10"></div>
             <span className="text-white/40 text-sm">or sign in with email</span>
             <div className="flex-1 h-px bg-white/10"></div>
+          </div>
+
+          <div className="flex bg-white/5 rounded-xl p-1 mb-6 border border-white/10">
+            <button
+              type="button"
+              onClick={() => setRole('student')}
+              className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
+                role === 'student' 
+                  ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-lg' 
+                  : 'text-white/50 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              Student
+            </button>
+            <button
+              type="button"
+              onClick={() => setRole('owner')}
+              className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
+                role === 'owner' 
+                  ? 'bg-gradient-to-r from-pink-500 to-purple-500 text-white shadow-lg' 
+                  : 'text-white/50 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              Owner
+            </button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
@@ -142,7 +176,6 @@ const Login = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   onFocus={() => setIsFocused('password')}
                   onBlur={() => setIsFocused('')}
-                  required
                 />
               </div>
             </div>
@@ -169,7 +202,7 @@ const Login = () => {
               type="submit"
               className="w-full py-3.5 px-4 bg-gradient-to-r from-pink-600 to-pink-500 hover:from-pink-500 hover:to-pink-400 text-white font-semibold rounded-xl shadow-lg shadow-pink-500/25 flex items-center justify-center gap-2 transition-all"
             >
-              Sign In <ArrowRight size={18} />
+              Sign In as {role === 'owner' ? 'Owner' : 'Student'} <ArrowRight size={18} />
             </motion.button>
           </form>
 

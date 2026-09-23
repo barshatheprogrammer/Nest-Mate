@@ -11,7 +11,7 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Please add an email'],
     unique: true,
     match: [
-      /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+      /^\S+@\S+\.\S+$/,
       'Please add a valid email'
     ]
   },
@@ -23,20 +23,34 @@ const userSchema = new mongoose.Schema({
   },
   role: {
     type: String,
-    enum: ['student', 'admin'],
+    enum: ['student', 'owner', 'admin'],
     default: 'student'
+  },
+  phone: {
+    type: String
   },
   profileImage: {
     type: String,
     default: 'default.jpg'
   },
+  coverImage: {
+    type: String,
+    default: 'default_cover.jpg'
+  },
   college: {
     type: String,
-    required: [true, 'Please add your college']
+    required: function() {
+      return this.role === 'student';
+    }
   },
   city: {
     type: String,
     required: [true, 'Please add your city']
+  },
+  status: {
+    type: String,
+    enum: ['active', 'suspended', 'blocked'],
+    default: 'active'
   },
   createdAt: {
     type: Date,
@@ -45,9 +59,9 @@ const userSchema = new mongoose.Schema({
 });
 
 // Encrypt password using bcrypt
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function() {
   if (!this.isModified('password')) {
-    next();
+    return;
   }
 
   const salt = await bcrypt.genSalt(10);

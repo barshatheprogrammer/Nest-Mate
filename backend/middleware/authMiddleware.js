@@ -35,4 +35,12 @@ const admin = (req, res, next) => {
   }
 };
 
-module.exports = { protect, admin };
+const owner = (req, res, next) => {
+  if (req.user && req.user.role === 'owner') {
+    next();
+  } else {
+    res.status(403).json({ message: 'Not authorized as an owner' });
+  }
+};
+
+module.exports = { protect, admin, owner };

@@ -32,12 +32,14 @@ if (process.env.NODE_ENV === 'development') {
 // Routes setup
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/profile', require('./routes/profile'));
-// app.use('/api/roommates', require('./routes/roommates'));
-// app.use('/api/requests', require('./routes/requests'));
-// app.use('/api/messages', require('./routes/messages'));
+app.use('/api/flats', require('./routes/flats'));
+app.use('/api/matches', require('./routes/matches'));
+app.use('/api/requests', require('./routes/requests'));
+app.use('/api/messages', require('./routes/messages'));
+app.use('/api/owner', require('./routes/owner'));
 // app.use('/api/reviews', require('./routes/reviews'));
 // app.use('/api/reports', require('./routes/reports'));
-// app.use('/api/admin', require('./routes/admin'));
+app.use('/api/admin', require('./routes/admin'));
 
 // Error handling middleware
 // app.use(errorHandler);

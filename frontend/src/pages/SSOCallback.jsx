@@ -17,8 +17,10 @@ const SSOCallback = () => {
         
         <div className="hidden">
           <AuthenticateWithRedirectCallback 
-            afterSignInUrl="/profile"
-            afterSignUpUrl="/profile"
+            afterSignInUrl="/dashboard"
+            afterSignUpUrl="/dashboard"
+            signInForceRedirectUrl="/profile"
+            signUpForceRedirectUrl="/profile"
           />
         </div>
       </motion.div>

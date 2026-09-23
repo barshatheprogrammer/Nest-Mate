@@ -1,119 +1,113 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { Link } from 'react-router-dom';
-import { Search, MapPin, DollarSign, Book, Filter, Home, User, Coffee, Check, Clock } from 'lucide-react';
-import { mockRoommates } from '../data/mockRoommates';
+import { Search, MapPin, DollarSign, Home, Filter, Check, Users } from 'lucide-react';
+import { mockFlats } from '../data/mockFlats';
+import api from '../services/api';
 
 const Explore = () => {
   // Filter States
   const [searchTerm, setSearchTerm] = useState('');
-  const [city, setCity] = useState('');
-  const [college, setCollege] = useState('');
+  const [location, setLocation] = useState('');
   const [budgetMin, setBudgetMin] = useState('');
   const [budgetMax, setBudgetMax] = useState('');
-  const [roomType, setRoomType] = useState('Any');
-  const [food, setFood] = useState('Any');
-  const [smoking, setSmoking] = useState('Any');
-  const [pets, setPets] = useState('Any');
-  const [study, setStudy] = useState('Any');
-  const [sleep, setSleep] = useState('Any');
+  const [bhk, setBhk] = useState('Any');
+  const [furnished, setFurnished] = useState('Any');
   
-  const [sortBy, setSortBy] = useState('Best Match');
-  const [filteredRoommates, setFilteredRoommates] = useState(mockRoommates);
+  const [sortBy, setSortBy] = useState('Newest');
+  const [flats, setFlats] = useState([]);
+  const [filteredFlats, setFilteredFlats] = useState([]);
   const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  // Extract unique values for dropdowns
-  const cities = [...new Set(mockRoommates.map(r => r.city))];
-  const colleges = [...new Set(mockRoommates.map(r => r.college))];
+  const locations = [...new Set(mockFlats.map(f => f.location))];
+
+  useEffect(() => {
+    // Fetch flats from API, fallback to mock data if it fails
+    const fetchFlats = async () => {
+      try {
+        const { data } = await api.get('/flats');
+        setFlats(data.length > 0 ? data : mockFlats);
+      } catch (error) {
+        console.error("Error fetching flats, using mock data", error);
+        setFlats(mockFlats);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchFlats();
+  }, []);
+
+  useEffect(() => {
+    if (flats.length > 0) {
+      handleApplyFilters();
+    }
+  }, [flats, sortBy]);
 
   const handleApplyFilters = () => {
-    let results = mockRoommates;
+    let results = flats;
 
-    // Search (Name, College, City, Location)
     if (searchTerm) {
       const lowerSearch = searchTerm.toLowerCase();
-      results = results.filter(r => 
-        r.name.toLowerCase().includes(lowerSearch) ||
-        r.college.toLowerCase().includes(lowerSearch) ||
-        r.city.toLowerCase().includes(lowerSearch) ||
-        r.location.toLowerCase().includes(lowerSearch)
+      results = results.filter(f => 
+        f.title.toLowerCase().includes(lowerSearch) ||
+        f.location.toLowerCase().includes(lowerSearch) ||
+        f.city.toLowerCase().includes(lowerSearch)
       );
     }
 
-    // Exact match filters
-    if (city) results = results.filter(r => r.city === city);
-    if (college) results = results.filter(r => r.college === college);
-    if (roomType !== 'Any') results = results.filter(r => r.roomType === roomType);
-    if (food !== 'Any') results = results.filter(r => r.foodPreference === food || r.foodPreference === 'Any');
-    if (smoking !== 'Any') results = results.filter(r => r.smoking === smoking);
-    if (pets !== 'Any') results = results.filter(r => r.pets === pets || r.pets === 'Any');
-    if (study !== 'Any') results = results.filter(r => r.studySchedule === study || r.studySchedule === 'Flexible');
-    if (sleep !== 'Any') results = results.filter(r => r.sleepSchedule === sleep || r.sleepSchedule === 'Flexible');
+    if (location) results = results.filter(f => f.location === location);
+    if (bhk !== 'Any') results = results.filter(f => f.bhk.toString() === bhk);
+    if (furnished !== 'Any') results = results.filter(f => f.furnished === furnished);
 
-    // Budget Logic (overlap logic)
     const minB = budgetMin ? parseInt(budgetMin) : 0;
     const maxB = budgetMax ? parseInt(budgetMax) : 999999;
     if (budgetMin || budgetMax) {
-      results = results.filter(r => (r.budgetMin <= maxB && r.budgetMax >= minB));
+      results = results.filter(f => f.monthlyRent >= minB && f.monthlyRent <= maxB);
     }
 
-    // Sort Logic
-    if (sortBy === 'Highest Compatibility') {
-      results.sort((a, b) => b.compatibility - a.compatibility);
-    } else if (sortBy === 'Lowest Budget') {
-      results.sort((a, b) => a.budgetMin - b.budgetMin);
-    } else if (sortBy === 'Highest Budget') {
-      results.sort((a, b) => b.budgetMax - a.budgetMax);
-    } // Best Match keeps default order which is usually sorted by compatibility or algorithm
+    if (sortBy === 'Lowest Rent') {
+      results.sort((a, b) => a.monthlyRent - b.monthlyRent);
+    } else if (sortBy === 'Highest Rent') {
+      results.sort((a, b) => b.monthlyRent - a.monthlyRent);
+    } else if (sortBy === 'Newest') {
+      results.sort((a, b) => new Date(b.createdAt || '2026-01-01').getTime() - new Date(a.createdAt || '2026-01-01').getTime());
+    }
 
-    setFilteredRoommates(results);
-    setShowMobileFilters(false); // Close mobile filters on apply
+    setFilteredFlats(results);
+    setShowMobileFilters(false);
   };
 
   const handleClearFilters = () => {
     setSearchTerm('');
-    setCity('');
-    setCollege('');
+    setLocation('');
     setBudgetMin('');
     setBudgetMax('');
-    setRoomType('Any');
-    setFood('Any');
-    setSmoking('Any');
-    setPets('Any');
-    setStudy('Any');
-    setSleep('Any');
-    setSortBy('Best Match');
-    setFilteredRoommates(mockRoommates);
+    setBhk('Any');
+    setFurnished('Any');
+    setSortBy('Newest');
+    setFilteredFlats(flats);
   };
-
-  // Run initial filter to apply default sorting
-  useEffect(() => {
-    handleApplyFilters();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortBy]); 
 
   return (
     <div className="min-h-screen bg-black text-white pb-20 relative overflow-hidden pt-8">
-      {/* Background gradients */}
       <div className="absolute top-[10%] left-[-10%] w-[40%] h-[40%] bg-pink-600/10 rounded-full blur-[120px] pointer-events-none" />
       <div className="absolute top-[40%] right-[-10%] w-[30%] h-[30%] bg-purple-600/10 rounded-full blur-[120px] pointer-events-none" />
       
       <div className="max-w-[1400px] mx-auto px-6 relative z-10">
         
-        {/* Header Section */}
         <div className="mb-10 text-center md:text-left">
-          <p className="text-pink-500 font-semibold tracking-wider text-sm mb-2 uppercase">Explore</p>
+          <p className="text-pink-500 font-semibold tracking-wider text-sm mb-2 uppercase">Explore Flats</p>
           <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-pink-400 mb-4">
-            Find a Roommate Who Fits Your Lifestyle
+            Find Your Next Flat
           </h1>
           <p className="text-white/60 text-lg max-w-2xl">
-            Discover students based on location, budget, college, and lifestyle preferences.
+            Explore flats and find students who are looking for a compatible roommate.
           </p>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-8">
           
-          {/* Mobile Filter Toggle */}
           <div className="lg:hidden">
             <button 
               onClick={() => setShowMobileFilters(!showMobileFilters)}
@@ -123,7 +117,6 @@ const Explore = () => {
             </button>
           </div>
 
-          {/* Filters Sidebar */}
           <div className={`lg:w-[320px] shrink-0 ${showMobileFilters ? 'block' : 'hidden lg:block'}`}>
             <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl p-6 sticky top-28">
               
@@ -137,14 +130,13 @@ const Explore = () => {
               </div>
 
               <div className="space-y-5">
-                {/* Search */}
                 <div>
                   <label className="text-xs text-white/50 mb-1 block uppercase tracking-wider">Search</label>
                   <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-white/40" size={16} />
                     <input 
                       type="text" 
-                      placeholder="Name, college, location..." 
+                      placeholder="Title, location..." 
                       className="w-full bg-black/50 border border-white/10 rounded-xl py-2.5 pl-10 pr-3 text-sm focus:outline-none focus:border-pink-500 transition-colors"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
@@ -152,35 +144,20 @@ const Explore = () => {
                   </div>
                 </div>
 
-                {/* City */}
                 <div>
-                  <label className="text-xs text-white/50 mb-1 block uppercase tracking-wider">City</label>
+                  <label className="text-xs text-white/50 mb-1 block uppercase tracking-wider">Location</label>
                   <select 
                     className="w-full bg-black/50 border border-white/10 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-pink-500 appearance-none"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
                   >
-                    <option value="">Select city</option>
-                    {cities.map(c => <option key={c} value={c}>{c}</option>)}
+                    <option value="">Select location</option>
+                    {locations.map(l => <option key={l} value={l}>{l}</option>)}
                   </select>
                 </div>
 
-                {/* College */}
                 <div>
-                  <label className="text-xs text-white/50 mb-1 block uppercase tracking-wider">College</label>
-                  <select 
-                    className="w-full bg-black/50 border border-white/10 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-pink-500 appearance-none"
-                    value={college}
-                    onChange={(e) => setCollege(e.target.value)}
-                  >
-                    <option value="">Select college</option>
-                    {colleges.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-
-                {/* Budget */}
-                <div>
-                  <label className="text-xs text-white/50 mb-1 block uppercase tracking-wider">Budget (₹ / mo)</label>
+                  <label className="text-xs text-white/50 mb-1 block uppercase tracking-wider">Rent (₹ / mo)</label>
                   <div className="flex gap-2">
                     <input 
                       type="number" 
@@ -199,60 +176,32 @@ const Explore = () => {
                   </div>
                 </div>
 
-                {/* Room Type */}
                 <div>
-                  <label className="text-xs text-white/50 mb-1 block uppercase tracking-wider">Room Type</label>
+                  <label className="text-xs text-white/50 mb-1 block uppercase tracking-wider">BHK</label>
                   <select 
                     className="w-full bg-black/50 border border-white/10 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-pink-500 appearance-none"
-                    value={roomType}
-                    onChange={(e) => setRoomType(e.target.value)}
+                    value={bhk}
+                    onChange={(e) => setBhk(e.target.value)}
                   >
                     <option value="Any">Any</option>
-                    <option value="Single">Single</option>
-                    <option value="Shared">Shared</option>
+                    <option value="1">1 BHK</option>
+                    <option value="2">2 BHK</option>
+                    <option value="3">3 BHK</option>
+                    <option value="4">4+ BHK</option>
                   </select>
                 </div>
 
-                {/* Food Preference */}
                 <div>
-                  <label className="text-xs text-white/50 mb-1 block uppercase tracking-wider">Food Preference</label>
+                  <label className="text-xs text-white/50 mb-1 block uppercase tracking-wider">Furnished</label>
                   <select 
                     className="w-full bg-black/50 border border-white/10 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-pink-500 appearance-none"
-                    value={food}
-                    onChange={(e) => setFood(e.target.value)}
+                    value={furnished}
+                    onChange={(e) => setFurnished(e.target.value)}
                   >
                     <option value="Any">Any</option>
-                    <option value="Vegetarian">Vegetarian</option>
-                    <option value="Non-Vegetarian">Non-Vegetarian</option>
-                  </select>
-                </div>
-                
-                {/* Smoking */}
-                <div>
-                  <label className="text-xs text-white/50 mb-1 block uppercase tracking-wider">Smoking</label>
-                  <select 
-                    className="w-full bg-black/50 border border-white/10 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-pink-500 appearance-none"
-                    value={smoking}
-                    onChange={(e) => setSmoking(e.target.value)}
-                  >
-                    <option value="Any">Any</option>
-                    <option value="Yes">Yes</option>
-                    <option value="No">No</option>
-                  </select>
-                </div>
-
-                {/* Sleep Schedule */}
-                <div>
-                  <label className="text-xs text-white/50 mb-1 block uppercase tracking-wider">Sleep Schedule</label>
-                  <select 
-                    className="w-full bg-black/50 border border-white/10 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-pink-500 appearance-none"
-                    value={sleep}
-                    onChange={(e) => setSleep(e.target.value)}
-                  >
-                    <option value="Any">Any</option>
-                    <option value="Early Sleeper">Early Sleeper</option>
-                    <option value="Night Owl">Night Owl</option>
-                    <option value="Flexible">Flexible</option>
+                    <option value="Fully Furnished">Fully Furnished</option>
+                    <option value="Semi Furnished">Semi Furnished</option>
+                    <option value="Unfurnished">Unfurnished</option>
                   </select>
                 </div>
 
@@ -266,13 +215,11 @@ const Explore = () => {
             </div>
           </div>
 
-          {/* Main Content (Results) */}
           <div className="flex-1">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
               <div>
-                <p className="text-pink-500 font-semibold tracking-wider text-xs uppercase mb-1">Recommended For You</p>
-                <h2 className="text-2xl font-bold">Potential Roommates</h2>
-                <p className="text-white/50 text-sm mt-1">Based on your preferences, here are students who may be compatible with you.</p>
+                <h2 className="text-2xl font-bold">Flats Available</h2>
+                <p className="text-white/50 text-sm mt-1">Browse flats and express your interest.</p>
               </div>
 
               <div className="shrink-0 flex items-center gap-2">
@@ -282,69 +229,78 @@ const Explore = () => {
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
                 >
-                  <option value="Best Match">Best Match</option>
-                  <option value="Highest Compatibility">Highest Compatibility</option>
-                  <option value="Lowest Budget">Lowest Budget</option>
-                  <option value="Highest Budget">Highest Budget</option>
+                  <option value="Newest">Newest</option>
+                  <option value="Lowest Rent">Lowest Rent</option>
+                  <option value="Highest Rent">Highest Rent</option>
                 </select>
               </div>
             </div>
 
-            {/* Results Grid */}
-            {filteredRoommates.length > 0 ? (
+            {loading ? (
+              <div className="text-center py-20"><p className="text-white/50">Loading flats...</p></div>
+            ) : filteredFlats.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 gap-6">
-                {filteredRoommates.map((rm, idx) => (
+                {filteredFlats.map((flat, idx) => (
                   <motion.div 
-                    key={rm.id}
+                    key={flat._id}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.05 }}
-                    className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-colors flex flex-col h-full"
+                    className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-5 hover:bg-white/10 transition-colors flex flex-col h-full"
                   >
-                    <div className="flex items-start gap-4 mb-4">
-                      <div className="relative shrink-0">
-                        <img src={rm.image} alt={rm.name} className="w-16 h-16 rounded-full object-cover border-2 border-pink-500" />
-                        <div className="absolute -bottom-2 -right-2 bg-black border border-white/10 rounded-lg px-1.5 py-0.5 flex items-center gap-1 shadow-xl">
-                           <span className="text-[10px] font-bold text-green-400">{rm.compatibility}%</span>
-                        </div>
+                    <div className="w-full h-48 mb-4 rounded-xl overflow-hidden relative">
+                      <img src={flat.images?.[0] || 'https://via.placeholder.com/800x600'} alt={flat.title} className="w-full h-full object-cover" />
+                      <div className="absolute top-3 right-3 bg-black/60 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/20">
+                         <span className="text-xs font-semibold text-white">{flat.furnished}</span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-bold truncate">{rm.name}, {rm.age}</h3>
-                        <p className="text-pink-400 text-sm truncate">{rm.college}</p>
-                        <p className="text-white/50 text-xs truncate">{rm.course} • {rm.location}, {rm.city}</p>
-                      </div>
+                    </div>
+                    
+                    <div className="mb-3">
+                      <h3 className="text-lg font-bold truncate">{flat.title}</h3>
+                      <p className="text-pink-400 text-sm flex items-center gap-1 mt-1">
+                        <MapPin size={14} /> {flat.location}, {flat.city}
+                      </p>
                     </div>
 
                     <div className="bg-black/40 rounded-xl p-3 mb-4 space-y-2 flex-1">
                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-white/50 flex items-center gap-1.5"><DollarSign size={14}/> Budget</span>
-                          <span className="font-medium text-white/90">₹{rm.budgetMin} - ₹{rm.budgetMax}</span>
+                          <span className="text-white/50 flex items-center gap-1.5"><DollarSign size={14}/> Rent</span>
+                          <span className="font-semibold text-white/90 text-base">₹{flat.monthlyRent}<span className="text-xs font-normal text-white/50">/mo</span></span>
                        </div>
                        <div className="flex justify-between items-center text-sm">
-                          <span className="text-white/50 flex items-center gap-1.5"><Home size={14}/> Room</span>
-                          <span className="font-medium text-white/90">{rm.roomType}</span>
+                          <span className="text-white/50 flex items-center gap-1.5"><Home size={14}/> Details</span>
+                          <span className="font-medium text-white/90">{flat.bhk} BHK • {flat.bathrooms} Bath</span>
                        </div>
                     </div>
 
-                    {/* Tags */}
                     <div className="flex flex-wrap gap-2 mb-6">
-                      <span className="bg-white/5 border border-white/10 text-white/70 text-xs px-2.5 py-1 rounded-md">{rm.foodPreference}</span>
-                      <span className="bg-white/5 border border-white/10 text-white/70 text-xs px-2.5 py-1 rounded-md">{rm.smoking === 'No' ? 'Non-Smoker' : 'Smoker'}</span>
-                      <span className="bg-white/5 border border-white/10 text-white/70 text-xs px-2.5 py-1 rounded-md">{rm.sleepSchedule}</span>
+                      {flat.amenities.slice(0, 3).map((amenity, i) => (
+                         <span key={i} className="bg-white/5 border border-white/10 text-white/70 text-xs px-2.5 py-1 rounded-md flex items-center gap-1">
+                           <Check size={12} className="text-green-400" /> {amenity}
+                         </span>
+                      ))}
+                      {flat.amenities.length > 3 && (
+                        <span className="bg-white/5 border border-white/10 text-white/70 text-xs px-2.5 py-1 rounded-md">+{flat.amenities.length - 3}</span>
+                      )}
+                    </div>
+
+                    <div className="flex justify-between items-center text-sm mb-4 bg-pink-500/10 border border-pink-500/20 px-3 py-2 rounded-lg text-pink-300">
+                       <span className="flex items-center gap-1.5"><Users size={14} /> Roommates Needed:</span>
+                       <span className="font-bold">{flat.roommatesNeeded}</span>
                     </div>
 
                     <div className="flex items-center gap-3 mt-auto">
                        <Link 
-                         to={`/roommates/${rm.id}`}
+                         to={`/flats/${flat._id}`}
                          className="flex-1 bg-white/10 hover:bg-white/20 border border-white/10 text-center py-2.5 rounded-lg text-sm font-medium transition-colors"
                        >
-                         View Profile
+                         View Details
                        </Link>
                        <Link 
-                         to={`/roommates/${rm.id}`}
+                         to={`/flats/${flat._id}`}
                          className="flex-1 bg-pink-600 hover:bg-pink-700 text-center py-2.5 rounded-lg text-sm font-medium transition-colors"
                        >
-                         Connect
+                         I'm Interested
                        </Link>
                     </div>
                   </motion.div>
@@ -353,8 +309,8 @@ const Explore = () => {
             ) : (
               <div className="bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-12 text-center h-full flex flex-col items-center justify-center">
                 <Search size={48} className="text-white/20 mb-4" />
-                <h3 className="text-xl font-bold mb-2">No roommates found</h3>
-                <p className="text-white/50 max-w-md mx-auto mb-6">Try changing your filters or searching for something else to discover more potential roommates.</p>
+                <h3 className="text-xl font-bold mb-2">No flats found</h3>
+                <p className="text-white/50 max-w-md mx-auto mb-6">Try changing your filters or searching for something else to discover more flats.</p>
                 <button 
                   onClick={handleClearFilters}
                   className="bg-white/10 hover:bg-white/20 border border-white/10 text-white px-6 py-2 rounded-lg font-medium transition-colors"

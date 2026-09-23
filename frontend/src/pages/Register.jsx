@@ -12,7 +12,9 @@ const Register = () => {
     password: '',
     confirmPassword: '',
     college: '',
-    city: ''
+    city: '',
+    phone: '',
+    role: 'student'
   });
   const [validationError, setValidationError] = useState('');
   const [isFocused, setIsFocused] = useState('');
@@ -23,7 +25,11 @@ const Register = () => {
 
   useEffect(() => {
     if (user) {
-      navigate('/profile');
+      if (user.role === 'owner') {
+        navigate('/owner/dashboard');
+      } else {
+        navigate('/profile');
+      }
     }
   }, [user, navigate]);
 
@@ -49,13 +55,13 @@ const Register = () => {
       name: formData.name,
       email: formData.email,
       password: formData.password,
-      college: formData.college,
-      city: formData.city
+      college: formData.role === 'student' ? formData.college : undefined,
+      city: formData.city,
+      phone: formData.role === 'owner' ? formData.phone : undefined,
+      role: formData.role
     });
 
-    if (success) {
-      navigate('/dashboard');
-    }
+    // Redirect is handled by the useEffect watching the 'user' state
   };
 
   return (
@@ -132,6 +138,31 @@ const Register = () => {
             <div className="flex-1 h-px bg-white/10"></div>
           </div>
 
+          <div className="flex bg-white/5 rounded-xl p-1 mb-6 border border-white/10">
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, role: 'student' })}
+              className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
+                formData.role === 'student' 
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg' 
+                  : 'text-white/50 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              Student
+            </button>
+            <button
+              type="button"
+              onClick={() => setFormData({ ...formData, role: 'owner' })}
+              className={`flex-1 py-2 text-sm font-semibold rounded-lg transition-all ${
+                formData.role === 'owner' 
+                  ? 'bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg' 
+                  : 'text-white/50 hover:text-white hover:bg-white/5'
+              }`}
+            >
+              Owner
+            </button>
+          </div>
+
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Row 1: Name and Email */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -176,27 +207,49 @@ const Register = () => {
               </div>
             </div>
 
-            {/* Row 2: College and City */}
+            {/* Row 2: College/Phone and City */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div className="space-y-1">
-                <label className="text-sm font-medium text-white/70 ml-1">College / University</label>
-                <div className={`relative flex items-center transition-all duration-300 rounded-xl border ${isFocused === 'college' ? 'border-purple-500 bg-white/10 shadow-[0_0_15px_rgba(168,85,247,0.15)]' : 'border-white/10 bg-white/5'}`}>
-                  <div className="pl-4 text-white/40">
-                    <Building size={18} />
+              {formData.role === 'student' ? (
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-white/70 ml-1">College / University</label>
+                  <div className={`relative flex items-center transition-all duration-300 rounded-xl border ${isFocused === 'college' ? 'border-purple-500 bg-white/10 shadow-[0_0_15px_rgba(168,85,247,0.15)]' : 'border-white/10 bg-white/5'}`}>
+                    <div className="pl-4 text-white/40">
+                      <Building size={18} />
+                    </div>
+                    <input
+                      type="text"
+                      id="college"
+                      className="w-full bg-transparent border-none py-3 px-3 text-white placeholder-white/30 focus:outline-none focus:ring-0"
+                      placeholder="State University"
+                      value={formData.college}
+                      onChange={handleChange}
+                      onFocus={() => setIsFocused('college')}
+                      onBlur={() => setIsFocused('')}
+                      required
+                    />
                   </div>
-                  <input
-                    type="text"
-                    id="college"
-                    className="w-full bg-transparent border-none py-3 px-3 text-white placeholder-white/30 focus:outline-none focus:ring-0"
-                    placeholder="State University"
-                    value={formData.college}
-                    onChange={handleChange}
-                    onFocus={() => setIsFocused('college')}
-                    onBlur={() => setIsFocused('')}
-                    required
-                  />
                 </div>
-              </div>
+              ) : (
+                <div className="space-y-1">
+                  <label className="text-sm font-medium text-white/70 ml-1">Phone Number</label>
+                  <div className={`relative flex items-center transition-all duration-300 rounded-xl border ${isFocused === 'phone' ? 'border-purple-500 bg-white/10 shadow-[0_0_15px_rgba(168,85,247,0.15)]' : 'border-white/10 bg-white/5'}`}>
+                    <div className="pl-4 text-white/40">
+                      <User size={18} />
+                    </div>
+                    <input
+                      type="tel"
+                      id="phone"
+                      className="w-full bg-transparent border-none py-3 px-3 text-white placeholder-white/30 focus:outline-none focus:ring-0"
+                      placeholder="+91 9876543210"
+                      value={formData.phone}
+                      onChange={handleChange}
+                      onFocus={() => setIsFocused('phone')}
+                      onBlur={() => setIsFocused('')}
+                      required
+                    />
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-1">
                 <label className="text-sm font-medium text-white/70 ml-1">City</label>
@@ -268,7 +321,7 @@ const Register = () => {
               type="submit"
               className="w-full py-3.5 px-4 mt-4 bg-gradient-to-r from-purple-600 to-pink-500 hover:from-purple-500 hover:to-pink-400 text-white font-semibold rounded-xl shadow-lg shadow-purple-500/25 flex items-center justify-center gap-2 transition-all"
             >
-              <UserPlus size={18} /> Complete Registration
+              <UserPlus size={18} /> {formData.role === 'owner' ? 'Create Owner Account' : 'Complete Registration'}
             </motion.button>
           </form>
 

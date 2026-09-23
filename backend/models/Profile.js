@@ -7,9 +7,10 @@ const profileSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
+  gender: { type: String, enum: ['Male', 'Female', 'Other', 'Any'], default: 'Any' },
   age: { type: Number, default: 0 },
   course: { type: String, default: 'Not specified' },
-  location: { type: String, default: 'Not specified' }, // specific area preferred
+  location: { type: String, default: 'Not specified' },
   bio: { type: String, maxLength: 500 },
   
   // Budget

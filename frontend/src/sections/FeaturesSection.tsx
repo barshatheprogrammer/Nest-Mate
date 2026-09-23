@@ -8,7 +8,7 @@ import type { IFeature } from "../types";
 export default function FeaturesSection() {
     return (
         <div id="features" className="px-4 md:px-16 lg:px-24 xl:px-32">
-            <SectionTitle text1="Features" text2="Everything You Need to Find the Right Roommate" text3="NestMate makes roommate discovery simple, personalized, and student-friendly." />
+            <SectionTitle text1="How It Works" text2="How NestMate Works" text3="Find your ideal flat and match with compatible roommates in just 4 simple steps." />
             <div className="flex flex-wrap items-center justify-center gap-6 md:gap-4 mt-16 px-6">
                 {featuresData.map((feature: IFeature, index: number) => (
                     <motion.div key={index} className={`${index === 1 ? 'p-px rounded-[13px] bg-linear-to-br from-pink-600 to-slate-800' : ''}`}

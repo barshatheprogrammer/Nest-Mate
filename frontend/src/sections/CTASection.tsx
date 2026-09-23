@@ -24,7 +24,7 @@ export default function CTASection() {
                     viewport={{ once: true }}
                     transition={{ type: "spring", stiffness: 200, damping: 70, mass: 1 }}
                 >
-                    Create your profile, discover compatible students, and find someone who fits your lifestyle.
+                    Explore flats, meet compatible students and find the right person to share your next home with.
                 </motion.p>
             </div>
             <motion.button className="px-12 py-3 text-slate-800 bg-white hover:bg-slate-200 rounded-full text-sm mt-4"
@@ -33,7 +33,7 @@ export default function CTASection() {
                 viewport={{ once: true }}
                 transition={{ type: "spring", stiffness: 280, damping: 70, mass: 1 }}
             >
-                Get Started
+                Explore Flats
             </motion.button>
         </motion.div>
     );

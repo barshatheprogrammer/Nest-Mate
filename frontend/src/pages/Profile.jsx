@@ -24,6 +24,7 @@ const Profile = () => {
 
     const fetchProfile = async () => {
       try {
+        setError(null);
         const res = await axios.get('/profile');
         setProfile(res.data);
       } catch (err) {

@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
   axios.defaults.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   const { isLoaded, isSignedIn, user: clerkUser } = useUser();
-  const { getToken } = useAuth();
+  const { getToken, signOut } = useAuth();
 
   useEffect(() => {
     // Do not finalize auth state until Clerk has finished loading
@@ -26,7 +26,7 @@ export const AuthProvider = ({ children }) => {
       if (isSignedIn && clerkUser && !storedUser) {
         try {
           const email = clerkUser.primaryEmailAddress?.emailAddress;
-          const name = clerkUser.fullName || 'User';
+          const name = clerkUser.fullName || clerkUser.firstName || (email ? email.split('@')[0] : 'User');
           const imageUrl = clerkUser.imageUrl;
           if (email) {
             const res = await axios.post('/auth/clerk-sync', { email, clerkId: clerkUser.id, name, imageUrl });
@@ -35,7 +35,9 @@ export const AuthProvider = ({ children }) => {
             axios.defaults.headers.common['Authorization'] = `Bearer ${res.data.token}`;
           }
         } catch (err) {
-          console.error("Clerk sync failed", err);
+          console.error("Clerk sync failed", err.response?.data || err);
+          // If backend sync fails, we must sign out of Clerk to prevent being trapped in a half-logged-in state.
+          await signOut();
         }
       } else if (storedUser) {
         const parsedUser = JSON.parse(storedUser);
