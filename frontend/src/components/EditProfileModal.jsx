@@ -126,7 +126,10 @@ const EditProfileModal = ({ isOpen, onClose, currentProfile, currentUser, onSave
           </div>
 
           {/* Body */}
-          <div className="flex-1 overflow-y-auto p-6 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+          <div 
+            className="flex-1 overflow-y-auto p-6 custom-scrollbar"
+            data-lenis-prevent="true"
+          >
             {error && (
               <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm font-medium">
                 {error}

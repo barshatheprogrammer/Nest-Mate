@@ -5,17 +5,21 @@ import { Plus, Edit, Trash2, MapPin } from 'lucide-react';
 
 const OwnerFlats = () => {
   const [flats, setFlats] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     fetchFlats();
   }, []);
 
   const fetchFlats = async () => {
+    setIsLoading(true);
     try {
-      const res = await api.get('/owner/flats');
+      const res = await api.get(`/owner/flats?t=${new Date().getTime()}`);
       setFlats(res.data);
     } catch (err) {
       console.error(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -62,7 +66,12 @@ const OwnerFlats = () => {
               </div>
             </div>
           ))}
-          {flats.length === 0 && (
+          {isLoading ? (
+            <div className="text-center py-12 text-white/50 bg-white/5 rounded-xl border border-white/10 flex flex-col items-center justify-center">
+              <div className="w-8 h-8 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+              <p>Loading flats...</p>
+            </div>
+          ) : flats.length === 0 && (
             <div className="text-center py-12 text-white/50 bg-white/5 rounded-xl border border-white/10">
               No flats added yet. Click "Add New Flat" to get started.
             </div>

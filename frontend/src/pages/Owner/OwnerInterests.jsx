@@ -3,9 +3,13 @@ import api from '../../services/api';
 
 const OwnerInterests = () => {
   const [interests, setInterests] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/owner/interests').then(res => setInterests(res.data)).catch(console.error);
+    api.get(`/owner/interests?t=${new Date().getTime()}`)
+      .then(res => setInterests(res.data))
+      .catch(console.error)
+      .finally(() => setIsLoading(false));
   }, []);
 
   return (
@@ -29,7 +33,14 @@ const OwnerInterests = () => {
               </div>
             </div>
           ))}
-          {interests.length === 0 && <div className="text-center text-white/50 py-12 bg-white/5 rounded-xl border border-white/10">No interested students yet.</div>}
+          {isLoading ? (
+            <div className="text-center py-12 text-white/50 bg-white/5 rounded-xl border border-white/10 flex flex-col items-center justify-center">
+              <div className="w-8 h-8 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+              <p>Loading interests...</p>
+            </div>
+          ) : interests.length === 0 && (
+            <div className="text-center text-white/50 py-12 bg-white/5 rounded-xl border border-white/10">No interested students yet.</div>
+          )}
         </div>
       </div>
     </div>

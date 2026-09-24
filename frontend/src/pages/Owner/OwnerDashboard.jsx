@@ -5,12 +5,13 @@ import { Home, CheckCircle, Clock, Users } from 'lucide-react';
 const OwnerDashboard = () => {
   const [stats, setStats] = useState({ total: 0, active: 0, pending: 0, interested: 0 });
   const [recentFlats, setRecentFlats] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const flatsRes = await api.get('/owner/flats');
-        const interestsRes = await api.get('/owner/interests');
+        const flatsRes = await api.get(`/owner/flats?t=${new Date().getTime()}`);
+        const interestsRes = await api.get(`/owner/interests?t=${new Date().getTime()}`);
         const flats = flatsRes.data;
         const interests = interestsRes.data;
         
@@ -24,6 +25,8 @@ const OwnerDashboard = () => {
         setRecentFlats(flats.slice(0, 4)); // Show up to 4 recent flats
       } catch (err) {
         console.error("Failed to fetch owner stats", err);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchStats();
@@ -92,6 +95,11 @@ const OwnerDashboard = () => {
                   </div>
                 </div>
               ))}
+            </div>
+          ) : isLoading ? (
+            <div className="bg-white/5 border border-white/10 rounded-xl p-12 text-center flex flex-col items-center justify-center">
+              <div className="w-8 h-8 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+              <p className="text-white/60 font-medium">Loading dashboard...</p>
             </div>
           ) : (
             <div className="bg-white/5 border border-white/10 rounded-xl p-12 text-center flex flex-col items-center">
