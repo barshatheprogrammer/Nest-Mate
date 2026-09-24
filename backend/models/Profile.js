@@ -20,49 +20,40 @@ const profileSchema = new mongoose.Schema({
   // Room Preferences
   roomType: { 
     type: String, 
-    enum: ['Single', 'Shared', 'Any'],
     default: 'Any'
   },
   
   // Lifestyle
   foodPreference: {
     type: String,
-    enum: ['Vegetarian', 'Non-Vegetarian', 'Vegan', 'Any'],
     default: 'Any'
   },
   smoking: {
     type: String,
-    enum: ['Yes', 'No', 'Occasionally'],
     default: 'No'
   },
   drinking: {
     type: String,
-    enum: ['Yes', 'No', 'Occasionally'],
     default: 'No'
   },
   pets: {
     type: String,
-    enum: ['Yes', 'No', 'Comfortable with pets'],
     default: 'No'
   },
   studySchedule: {
     type: String,
-    enum: ['Morning', 'Afternoon', 'Evening', 'Night'],
-    default: 'Evening'
+    default: 'Flexible'
   },
   sleepSchedule: {
     type: String,
-    enum: ['Early Sleeper', 'Flexible', 'Late Sleeper'],
     default: 'Flexible'
   },
   cleanliness: {
     type: String,
-    enum: ['Low', 'Moderate', 'High'],
-    default: 'Moderate'
+    default: 'Average'
   },
   socialPreference: {
     type: String,
-    enum: ['Introvert', 'Balanced', 'Extrovert'],
     default: 'Balanced'
   }
 }, { timestamps: true });

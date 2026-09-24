@@ -29,7 +29,8 @@ const Profile = () => {
         setProfile(res.data);
       } catch (err) {
         if (err.response?.status === 404) {
-          setError("Profile not found. Click Edit Profile to create one.");
+          // Do not set error for 404, let the UI show "Profile Not Setup"
+          setProfile(null);
         } else {
           setError(err.response?.data?.message || 'Failed to fetch profile');
         }
@@ -110,7 +111,10 @@ const Profile = () => {
             <p className="text-white/50 mb-8 max-w-md mx-auto">
               You haven't set up your roommate preferences yet. Complete your profile to start finding compatible roommates.
             </p>
-            <button className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white px-8 py-3 rounded-xl font-medium shadow-lg shadow-pink-500/25 transition-all">
+            <button 
+              onClick={() => setIsModalOpen(true)}
+              className="bg-gradient-to-r from-pink-600 to-purple-600 hover:from-pink-500 hover:to-purple-500 text-white px-8 py-3 rounded-xl font-medium shadow-lg shadow-pink-500/25 transition-all"
+            >
               Create Profile
             </button>
           </motion.div>

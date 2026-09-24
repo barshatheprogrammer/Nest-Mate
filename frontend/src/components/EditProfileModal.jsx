@@ -28,21 +28,22 @@ const EditProfileModal = ({ isOpen, onClose, currentProfile, currentUser, onSave
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    if (isOpen && currentProfile && currentUser) {
+    if (isOpen && currentUser) {
+      const p = currentProfile || {};
       setFormData({
         name: currentUser.name || '',
-        bio: currentProfile.bio || '',
-        age: currentProfile.age || '',
-        course: currentProfile.course || '',
+        bio: p.bio || '',
+        age: p.age || '',
+        course: p.course || '',
         college: currentUser.college || '',
         city: currentUser.city || '',
-        budgetMin: currentProfile.budgetMin || '',
-        budgetMax: currentProfile.budgetMax || '',
-        roomType: currentProfile.roomType || 'Any',
-        foodPreference: currentProfile.foodPreference || 'Any',
-        sleepSchedule: currentProfile.sleepSchedule || 'Flexible',
-        studySchedule: currentProfile.studySchedule || 'Flexible',
-        cleanliness: currentProfile.cleanliness || 'Average',
+        budgetMin: p.budgetMin || '',
+        budgetMax: p.budgetMax || '',
+        roomType: p.roomType || 'Any',
+        foodPreference: p.foodPreference || 'Any',
+        sleepSchedule: p.sleepSchedule || 'Flexible',
+        studySchedule: p.studySchedule || 'Flexible',
+        cleanliness: p.cleanliness || 'Average',
       });
       
       const img = currentUser.profileImage && currentUser.profileImage !== 'default.jpg' 
@@ -52,7 +53,7 @@ const EditProfileModal = ({ isOpen, onClose, currentProfile, currentUser, onSave
       setProfileImage(currentUser.profileImage === 'default.jpg' ? '' : currentUser.profileImage);
       setPreviewImage(img);
     }
-  }, [isOpen, currentProfile, currentUser]);
+  }, [isOpen]); // Only run when the modal opens or closes
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
