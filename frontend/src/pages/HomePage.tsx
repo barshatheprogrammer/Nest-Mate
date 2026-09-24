@@ -10,6 +10,7 @@ export default function HomePage() {
         <>
             <HeroSection />
             <FeaturesSection />
+            <PricingSection />
             <TestimonialSection />
             <ContactSection />
             <CTASection />

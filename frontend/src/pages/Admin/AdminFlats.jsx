@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Search, CheckCircle, XCircle, SearchX, MapPin, Eye } from 'lucide-react';
 import api from '../../services/api';
 
-const AdminFlats = ({ onlyPending = false }) => {
+const AdminFlats = () => {
   const [flats, setFlats] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterStatus, setFilterStatus] = useState(onlyPending ? 'pending' : 'all');
+  const [filterStatus, setFilterStatus] = useState('all');
   
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -50,7 +51,7 @@ const AdminFlats = ({ onlyPending = false }) => {
     <div className="w-full">
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500">
-          {onlyPending ? 'Pending Approvals' : 'All Flats'}
+          All Flats
         </h1>
         
         {/* Actions Bar */}
@@ -66,7 +67,6 @@ const AdminFlats = ({ onlyPending = false }) => {
             />
           </form>
           
-          {!onlyPending && (
             <div className="flex gap-4 w-full md:w-auto">
               <select 
                 className="bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-sm text-white/70 focus:outline-none focus:border-pink-500"
@@ -74,13 +74,11 @@ const AdminFlats = ({ onlyPending = false }) => {
                 onChange={(e) => { setFilterStatus(e.target.value); setPage(1); }}
               >
                 <option value="all">All Statuses</option>
-                <option value="pending">Pending</option>
                 <option value="approved">Approved</option>
                 <option value="rejected">Rejected</option>
                 <option value="inactive">Inactive</option>
               </select>
             </div>
-          )}
         </div>
 
         {/* Table */}
@@ -130,9 +128,9 @@ const AdminFlats = ({ onlyPending = false }) => {
                       <td className="p-4 text-white/50">{new Date(flat.createdAt).toLocaleDateString()}</td>
                       <td className="p-4 text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <a href={`/flats/${flat._id}`} target="_blank" rel="noreferrer" className="p-2 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-500/20 transition tooltip" title="View Public Page">
+                          <Link to={`/flats/${flat._id}`} className="p-2 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-500/20 transition tooltip" title="View Public Page">
                             <Eye size={16} />
-                          </a>
+                          </Link>
                           {flat.status !== 'approved' && (
                             <button onClick={() => handleStatusChange(flat._id, 'approved')} className="p-2 bg-green-500/10 text-green-400 rounded-lg hover:bg-green-500/20 transition tooltip" title="Approve">
                               <CheckCircle size={16} />

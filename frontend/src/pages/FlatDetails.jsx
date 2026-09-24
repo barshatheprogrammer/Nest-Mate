@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { MapPin, DollarSign, Home, Check, Users, ArrowLeft, Shield, Calendar, X } from 'lucide-react';
 import api from '../services/api';
@@ -9,6 +9,7 @@ import { mockFlats } from '../data/mockFlats';
 const FlatDetails = () => {
   const { id } = useParams();
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
   
   const [flat, setFlat] = useState(null);
   const [interestedUsers, setInterestedUsers] = useState([]);
@@ -63,7 +64,7 @@ const FlatDetails = () => {
   }, [id, user]);
 
   const handleImInterested = async () => {
-    if (!user) return alert("Please login first");
+    if (!user) return navigate('/login');
     try {
       await api.post(`/flats/${id}/interest`, { lookingForRoommate: false });
       setInterestStatus('interested');
@@ -71,6 +72,11 @@ const FlatDetails = () => {
     } catch (err) {
       alert("Error saving interest");
     }
+  };
+
+  const handleNeedRoommateClick = () => {
+    if (!user) return navigate('/login');
+    setShowRoommateModal(true);
   };
 
   const handleNeedRoommateSubmit = async (e) => {
@@ -96,17 +102,35 @@ const FlatDetails = () => {
       <div className="absolute top-[10%] left-[-10%] w-[40%] h-[40%] bg-pink-600/10 rounded-full blur-[120px] pointer-events-none" />
       
       <div className="max-w-6xl mx-auto px-6 relative z-10">
-        <Link to="/explore" className="inline-flex items-center gap-2 text-white/50 hover:text-white mb-6 transition">
-          <ArrowLeft size={18} /> Back to Explore
+        <Link 
+          to={user?.role === 'admin' ? '/admin/flats' : user?.role === 'owner' ? '/owner/flats' : '/explore'} 
+          className="inline-flex items-center gap-2 text-white/50 hover:text-white mb-6 transition"
+        >
+          <ArrowLeft size={18} /> Back to {user?.role === 'admin' ? 'Admin Flats' : user?.role === 'owner' ? 'My Flats' : 'Explore'}
         </Link>
 
         {/* Hero Section */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-          <div className="w-full h-[400px] rounded-2xl overflow-hidden relative">
-             <img src={flat.images?.[0] || 'https://via.placeholder.com/800x600'} alt={flat.title} className="w-full h-full object-cover" />
-             <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/20">
+          <div className="w-full h-[400px] rounded-2xl overflow-hidden relative group">
+             {flat.images && flat.images.length > 0 ? (
+               <div className="flex h-full w-full overflow-x-auto snap-x snap-mandatory" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+                 {flat.images.map((img, idx) => (
+                   <div key={idx} className="min-w-full h-full shrink-0 snap-center relative">
+                     <img src={img} alt={`${flat.title} - Image ${idx + 1}`} className="w-full h-full object-cover" />
+                   </div>
+                 ))}
+               </div>
+             ) : (
+               <img src='https://via.placeholder.com/800x600' alt={flat.title} className="w-full h-full object-cover" />
+             )}
+             <div className="absolute top-4 right-4 bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/20 z-10">
                  <span className="text-sm font-semibold text-white">{flat.furnished}</span>
              </div>
+             {flat.images && flat.images.length > 1 && (
+               <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 bg-black/60 backdrop-blur-md px-4 py-1.5 rounded-full border border-white/20 z-10 pointer-events-none">
+                 <span className="text-xs font-medium text-white/90 text-nowrap">Scroll for more photos • {flat.images.length}</span>
+               </div>
+             )}
           </div>
           
           <div className="flex flex-col justify-center">
@@ -142,7 +166,7 @@ const FlatDetails = () => {
                    <div className="w-full md:w-auto bg-pink-500/20 text-pink-400 border border-pink-500/30 py-3 px-6 rounded-xl text-center font-medium">
                      Interest Saved
                    </div>
-                   <button onClick={() => setShowRoommateModal(true)} className="flex-1 bg-pink-600 hover:bg-pink-700 py-3 px-6 rounded-xl font-medium transition">
+                   <button onClick={handleNeedRoommateClick} className="flex-1 bg-pink-600 hover:bg-pink-700 py-3 px-6 rounded-xl font-medium transition">
                      I Need a Roommate
                    </button>
                  </>
@@ -151,7 +175,7 @@ const FlatDetails = () => {
                    <button onClick={handleImInterested} className="flex-1 bg-white/10 hover:bg-white/20 border border-white/10 py-3 px-6 rounded-xl font-medium transition">
                      I'm Interested
                    </button>
-                   <button onClick={() => setShowRoommateModal(true)} className="flex-1 bg-pink-600 hover:bg-pink-700 py-3 px-6 rounded-xl font-medium transition shadow-lg shadow-pink-500/25">
+                   <button onClick={handleNeedRoommateClick} className="flex-1 bg-pink-600 hover:bg-pink-700 py-3 px-6 rounded-xl font-medium transition shadow-lg shadow-pink-500/25">
                      I Need a Roommate
                    </button>
                  </>

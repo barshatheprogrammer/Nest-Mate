@@ -10,26 +10,33 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('student');
   const [isFocused, setIsFocused] = useState('');
-  const { user, login, error } = useContext(AuthContext);
+  const { user, login, logout, error } = useContext(AuthContext);
   const navigate = useNavigate();
   const clerk = useClerk();
 
   useEffect(() => {
+    // If they manually navigate to /login, clear existing session
     if (user) {
-      if (user.role === 'admin') {
+      logout();
+      if (clerk.loaded && clerk.user) {
+        clerk.signOut();
+      }
+    }
+  }, []); // Run only on mount
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const loggedInUser = await login(email, password);
+    
+    if (loggedInUser) {
+      if (loggedInUser.role === 'admin') {
         navigate('/admin/dashboard');
-      } else if (user.role === 'owner') {
+      } else if (loggedInUser.role === 'owner') {
         navigate('/owner/dashboard');
       } else {
         navigate('/profile');
       }
     }
-  }, [user, navigate]);
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    await login(email, password);
-    // Redirect is handled by the useEffect watching the 'user' state
   };
 
   return (

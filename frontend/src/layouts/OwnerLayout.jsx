@@ -1,9 +1,15 @@
-import React from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import React, { useContext } from 'react';
+import { NavLink, Outlet, Navigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 import { LayoutDashboard, Home, PlusSquare, Users, User } from 'lucide-react';
 import { motion } from 'motion/react';
 
 const OwnerLayout = () => {
+  const { user } = useContext(AuthContext);
+
+  if (!user || user.role !== 'owner') {
+    return <Navigate to="/login" replace />;
+  }
   const navLinkClass = ({ isActive }) =>
     `flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
       isActive 

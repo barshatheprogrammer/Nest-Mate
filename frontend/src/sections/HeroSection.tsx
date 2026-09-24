@@ -52,10 +52,10 @@ export default function HeroSection() {
                 <button className="bg-pink-600 hover:bg-pink-700 text-white rounded-full px-7 h-11">
                     Find Your Roommate
                 </button>
-                <button className="flex items-center gap-2 border border-pink-900 hover:bg-pink-950/50 transition rounded-full px-6 h-11">
+                <a href="#how-it-works" className="flex items-center gap-2 border border-pink-900 hover:bg-pink-950/50 transition rounded-full px-6 h-11">
                     <VideoIcon strokeWidth={1} />
                     <span>How It Works</span>
-                </button>
+                </a>
             </motion.div>
 
             <div className="flex flex-wrap justify-center items-center gap-4 md:gap-14 mt-12">

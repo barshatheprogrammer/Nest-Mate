@@ -20,7 +20,7 @@ const flatSchema = new mongoose.Schema({
   roommatesNeeded: { type: Number, default: 1 },
   ownerName: { type: String },
   ownerContact: { type: String },
-  status: { type: String, enum: ['pending', 'approved', 'rejected', 'inactive'], default: 'pending' },
+  status: { type: String, enum: ['pending', 'approved', 'rejected', 'inactive'], default: 'approved' },
   createdAt: { type: Date, default: Date.now }
 });
 

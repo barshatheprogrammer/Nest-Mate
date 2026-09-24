@@ -11,7 +11,6 @@ const AdminDashboard = () => {
     totalStudents: 0,
     totalOwners: 0,
     totalFlats: 0,
-    pendingFlats: 0,
     totalMatches: 0,
     activeConnections: 0,
     pendingReports: 0
@@ -70,11 +69,11 @@ const AdminDashboard = () => {
         </div>
         
         {/* KPI Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
           <StatCard title="Total Students" value={stats.totalStudents} icon={<Users />} color="bg-blue-500/20 text-blue-400" />
           <StatCard title="Total Owners" value={stats.totalOwners} icon={<UserCircle />} color="bg-indigo-500/20 text-indigo-400" />
           <StatCard title="Total Flats" value={stats.totalFlats} icon={<Home />} color="bg-pink-500/20 text-pink-400" />
-          <StatCard title="Pending Flats" value={stats.pendingFlats} icon={<Clock />} color="bg-yellow-500/20 text-yellow-400" />
+
           <StatCard title="Total Matches" value={stats.totalMatches} icon={<Heart />} color="bg-red-500/20 text-red-400" />
           <StatCard title="Active Connections" value={stats.activeConnections} icon={<Link2 />} color="bg-green-500/20 text-green-400" />
           <StatCard title="Pending Reports" value={stats.pendingReports} icon={<AlertTriangle />} color="bg-orange-500/20 text-orange-400" />
@@ -86,7 +85,7 @@ const AdminDashboard = () => {
             <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
               Quick Actions
             </h2>
-            <QuickAction title="Review Pending Flats" to="/admin/flats/pending" icon={<Clock size={20} />} />
+
             <QuickAction title="Manage Students" to="/admin/students" icon={<Users size={20} />} />
             <QuickAction title="Manage Owners" to="/admin/owners" icon={<UserCircle size={20} />} />
             <QuickAction title="View Reports" to="/admin/reports" icon={<ShieldAlert size={20} />} />

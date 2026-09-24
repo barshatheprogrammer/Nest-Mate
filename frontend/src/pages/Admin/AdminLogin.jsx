@@ -8,18 +8,23 @@ const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isFocused, setIsFocused] = useState('');
-  const { user, login, error } = useContext(AuthContext);
+  const { user, login, logout, error } = useContext(AuthContext);
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (user && user.role === 'admin') {
-      navigate('/admin/dashboard');
+    // If they manually navigate to /admin/login, clear existing session
+    if (user) {
+      logout();
     }
-  }, [user, navigate]);
+  }, []); // Run only on mount
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await login(email, password);
+    const loggedInUser = await login(email, password);
+    
+    if (loggedInUser && loggedInUser.role === 'admin') {
+      navigate('/admin/dashboard');
+    }
   };
 
   return (

@@ -73,8 +73,7 @@ const AppContent = () => {
                         <Route path="dashboard" element={<AdminDashboard />} />
                         <Route path="students" element={<AdminStudents />} />
                         <Route path="owners" element={<AdminOwners />} />
-                        <Route path="flats" element={<AdminFlats onlyPending={false} />} />
-                        <Route path="flats/pending" element={<AdminFlats onlyPending={true} />} />
+                        <Route path="flats" element={<AdminFlats />} />
                         <Route path="flats/reported" element={<AdminPlaceholder title="Reported Flats" />} />
                         <Route path="matches" element={<AdminPlaceholder title="Matches" />} />
                         <Route path="connections" element={<AdminPlaceholder title="Connections" />} />

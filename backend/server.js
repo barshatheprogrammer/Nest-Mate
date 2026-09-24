@@ -20,7 +20,7 @@ app.use(express.json({ limit: '10mb' }));
 
 // Enable CORS
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://nest-mate-gamma.vercel.app'],
+  origin: ['http://localhost:5173', 'https://nest-mate-n5ts.vercel.app'],
   credentials: true
 }));
 

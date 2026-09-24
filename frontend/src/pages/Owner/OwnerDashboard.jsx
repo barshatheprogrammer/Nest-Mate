@@ -3,7 +3,7 @@ import api from '../../services/api';
 import { Home, CheckCircle, Clock, Users } from 'lucide-react';
 
 const OwnerDashboard = () => {
-  const [stats, setStats] = useState({ total: 0, active: 0, pending: 0, interested: 0 });
+  const [stats, setStats] = useState({ total: 0, active: 0, interested: 0 });
   const [recentFlats, setRecentFlats] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -18,7 +18,6 @@ const OwnerDashboard = () => {
         setStats({
           total: flats.length,
           active: flats.filter(f => f.status === 'approved').length,
-          pending: flats.filter(f => f.status === 'pending').length,
           interested: interests.length
         });
         
@@ -37,7 +36,7 @@ const OwnerDashboard = () => {
       <div className="max-w-6xl mx-auto">
         <h1 className="text-3xl font-bold mb-8 text-transparent bg-clip-text bg-gradient-to-r from-pink-500 to-purple-500">Owner Dashboard</h1>
         
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white/5 border border-white/10 rounded-xl p-6 flex items-center gap-4">
             <div className="p-3 bg-pink-500/20 rounded-lg text-pink-500"><Home /></div>
             <div>
@@ -52,13 +51,7 @@ const OwnerDashboard = () => {
               <p className="text-2xl font-bold">{stats.active}</p>
             </div>
           </div>
-          <div className="bg-white/5 border border-white/10 rounded-xl p-6 flex items-center gap-4">
-            <div className="p-3 bg-yellow-500/20 rounded-lg text-yellow-500"><Clock /></div>
-            <div>
-              <p className="text-white/50 text-sm">Pending Approval</p>
-              <p className="text-2xl font-bold">{stats.pending}</p>
-            </div>
-          </div>
+
           <div className="bg-white/5 border border-white/10 rounded-xl p-6 flex items-center gap-4">
             <div className="p-3 bg-purple-500/20 rounded-lg text-purple-500"><Users /></div>
             <div>

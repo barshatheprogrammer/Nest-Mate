@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
+import { NavLink, Outlet, useNavigate, Navigate } from 'react-router-dom';
 import { 
   LayoutDashboard, Users, UserCircle, 
   Home, Clock, AlertTriangle, 
@@ -11,8 +12,13 @@ import {
 import { motion } from 'motion/react';
 
 const AdminLayout = () => {
+  const { user } = React.useContext(AuthContext);
   const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  if (!user || user.role !== 'admin') {
+    return <Navigate to="/admin/login" replace />;
+  }
 
   const handleLogout = () => {
     localStorage.removeItem('user');
@@ -91,10 +97,7 @@ const AdminLayout = () => {
                 <Home size={20} className="shrink-0" />
                 {!isCollapsed && <span className="font-medium text-sm truncate">All Flats</span>}
               </NavLink>
-              <NavLink to="/admin/flats/pending" className={navLinkClass} title="Pending Approval">
-                <Clock size={20} className="shrink-0" />
-                {!isCollapsed && <span className="font-medium text-sm truncate">Pending Approval</span>}
-              </NavLink>
+
               <NavLink to="/admin/flats/reported" className={navLinkClass} title="Reported Listings">
                 <AlertTriangle size={20} className="shrink-0" />
                 {!isCollapsed && <span className="font-medium text-sm truncate">Reported Listings</span>}

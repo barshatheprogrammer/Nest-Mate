@@ -56,7 +56,13 @@ const Explore = () => {
       );
     }
 
-    if (location) results = results.filter(f => f.location === location);
+    if (location) {
+      const lowerLoc = location.toLowerCase();
+      results = results.filter(f => 
+        f.location.toLowerCase().includes(lowerLoc) || 
+        f.city.toLowerCase().includes(lowerLoc)
+      );
+    }
     if (bhk !== 'Any') results = results.filter(f => f.bhk.toString() === bhk);
     if (furnished !== 'Any') results = results.filter(f => f.furnished === furnished);
 
@@ -146,14 +152,13 @@ const Explore = () => {
 
                 <div>
                   <label className="text-xs text-white/50 mb-1 block uppercase tracking-wider">Location</label>
-                  <select 
-                    className="w-full bg-black/50 border border-white/10 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-pink-500 appearance-none"
+                  <input 
+                    type="text"
+                    placeholder="Enter location"
+                    className="w-full bg-black/50 border border-white/10 rounded-xl py-2.5 px-3 text-sm focus:outline-none focus:border-pink-500"
                     value={location}
                     onChange={(e) => setLocation(e.target.value)}
-                  >
-                    <option value="">Select location</option>
-                    {locations.map(l => <option key={l} value={l}>{l}</option>)}
-                  </select>
+                  />
                 </div>
 
                 <div>
